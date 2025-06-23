@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landing Page</title>
+  <script defer src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <form action="http://localhost:3000/api/contact" method="POST" class="bg-white p-8 rounded-xl shadow-md w-full max-w-md space-y-4">
+    <h1 class="text-2xl font-bold text-center">Contáctanos</h1>
+    <input type="text" name="name" placeholder="Nombre completo" required class="w-full p-2 border rounded-md" />
+    <input type="email" name="email" placeholder="Correo electrónico" required class="w-full p-2 border rounded-md" />
+    <input type="tel" name="phone" placeholder="Teléfono" required class="w-full p-2 border rounded-md" />
+    <textarea name="message" placeholder="Mensaje" required class="w-full p-2 border rounded-md h-32"></textarea>
+    <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Enviar</button>
+  </form>
+</body>
+</html>

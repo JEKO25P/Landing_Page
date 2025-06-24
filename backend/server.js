@@ -16,10 +16,33 @@ app.post("/api/contact", (req, res) => {
       console.error(err);
       return res.status(500).json({ error: "Error al guardar en la base de datos." });
     }
+    console.log("Contacto guardado con ID:", this.lastID);
+
+    // Mostrar todos los contactos después de guardar uno
+    db.all("SELECT * FROM contacts", [], (err, rows) => {
+      if (err) {
+        console.error("Error al leer contactos:", err);
+      } else {
+        console.log("Lista de todos los contactos:");
+        console.table(rows);
+      }
+    });
+
     res.status(200).json({ success: true, id: this.lastID });
   });
 });
 
 app.listen(3000, () => {
   console.log("Servidor escuchando en http://localhost:3000");
+});
+
+
+
+db.all("SELECT * FROM contacts", [], (err, rows) => {
+  if (err) {
+    console.error("Error al leer los contactos:", err);
+  } else {
+    console.log("Contactos guardados en la base de datos:");
+    console.table(rows);
+  }
 });

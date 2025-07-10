@@ -2,14 +2,46 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const db = require("./db");
-
 const app = express();
+
+
+const axios = require("axios");
+
+
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.post("/api/contact", (req, res) => {
-  const { name, email, phone, message } = req.body;
+app.post("/api/contact", async(req, res) => {
+  const { name, email, phone, message, "g-recaptcha-response": token} = req.body;
+  
+  if (!token){
+    return res.status(400).send("Captcha no verificado");
+  }
+
+  const secretKey = "6LdT9W4rAAAAAAKkDoK53GcxS4tX-h34uoAEBO74";
+
+  try{
+    const{data} = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify4`,
+      null,
+      {
+        params:{
+          secret: secretKey,
+          response: token,
+        },
+      }
+    )
+    if (!data.success){
+      return res.status(400).send("Fallo la verificacion del captcha");
+    }
+
+    res.send("Formulario enviado con exito");
+  }catch(error){
+    console.error("Error en la verificacion del captcha", error);
+    res.status(500).send("Error del servidor");
+  }
+  
   const stmt = db.prepare("INSERT INTO contacts (name, email, phone, message) VALUES (?, ?, ?, ?)");
   stmt.run(name, email, phone, message, function (err) {
     if (err) {

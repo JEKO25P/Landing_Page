@@ -5,20 +5,39 @@ const bodyParser = require("body-parser");
 const axios = require("axios");
 const path = require("path");
 const db = require("./db");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const User = {
+  id: 1 ,
+  email: 'admin@gmail.com',
+  password: bcrypt.hashSync('123456', 8)
+};
 
 const app = express();
-app.use(cors({
-  origin: 'http://127.0.0.1:5500', // O usa '*' para desarrollo (no recomendado en producción)
-  methods: ['GET', 'POST']
-}));
+app.use(cors());
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.post('/api/login', (req, res)=>{
+  const{email,password} = req.body
+
+  if(email !== User.email || !bcrypt.compareSync(password, User.password)){
+    return res.status(401).json({message: 'Correo o Contraseña incorrectos'})
+  }
+
+  const token = jwt.sign({id: User.id, email: User.email}, process.env.JWT_SECRET|| '0cc76ff2b5fc83028a94906f02bffe6c004674160efb75858b9e648a46757be8', {
+    expiresIn : '2h',
+  })
+  res.json({token})
+})
 
 // Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Configuración de reCAPTCHA - Usar variable de entorno
-const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6Lf2724rAAAAACf2IZ_zSBUrgLMf3-IXxoGwcW0a';
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6Ldn634rAAAAAOmoMixcXnMfTD2t7Rzyzqo7YX44';
 
 // Función para verificar reCAPTCHA v2 (mostrará siempre la respuesta en consola)
 async function verifyRecaptcha(token) {
@@ -102,9 +121,9 @@ app.post("/api/contact", async (req, res) => {
 });
 
 // Ruta principal para servir el HTML
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
-});
+// app.get('/', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../frontend_react', 'App.jsx'));
+// });
 
 app.post("/api/contact", async (req, res) => {
   try {
@@ -212,9 +231,9 @@ app.use((err, req, res, next) => {
 });
 
 // Para una SPA (Single Page Application), redirige al index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
-});
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
+// });
 
 app.listen(3000, () => {
   console.log("Servidor escuchando en http://localhost:3000");

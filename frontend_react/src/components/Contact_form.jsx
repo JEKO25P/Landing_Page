@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import emailjs from '@emailjs/browser';
+import { useNavigate } from 'react-router-dom';
+
 
 const API_URL = 'http://localhost:3000'
-const SITE_KEY = '6Ldn634rAAAAAI6LT2wQVGKaYr5xAi1N_swK5HG4'
+const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const ContactForm = () => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
@@ -9,6 +12,19 @@ const ContactForm = () => {
   const [recaptchaValid, setRecaptchaValid] = useState(false)
   const [message, setMessage] = useState({ text: '', type: '' })
   const [loading, setLoading] = useState(false)
+
+  const navigate = useNavigate();
+  const handleback = () =>{
+    navigate(-1);
+  }
+
+  //para la sanitizacion de entrada
+  const blockUnsafeChars = (e) => {
+  const blockedChars = ['<', '>', '{', '}', '"', "'", "[", "]"];
+  if (blockedChars.includes(e.key)) {
+    e.preventDefault();
+  }
+  };
 
   useEffect(() => {
     // Cargar reCAPTCHA
@@ -49,47 +65,67 @@ const ContactForm = () => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!recaptchaToken || !recaptchaValid) {
-      showMessage('Por favor, completa la verificación de reCAPTCHA', 'error')
-      return
-    }
-
-    const { name, email, message } = form
-    if (!name || !email || !message) {
-      showMessage('Por favor, completa todos los campos obligatorios.', 'error')
-      return
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      showMessage('Por favor, ingresa un email válido.', 'error')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const response = await fetch(`${API_URL}/api/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, 'g-recaptcha-response': recaptchaToken }),
-      })
-
-      const result = await response.json()
-
-      if (response.ok && result.success) {
-        showMessage('¡Mensaje enviado correctamente! Te contactaremos pronto.', 'success')
-        setForm({ name: '', email: '', phone: '', message: '' })
-        resetRecaptcha()
-      } else {
-        throw new Error(result.error || 'Error al enviar el mensaje')
-      }
-    } catch (err) {
-      showMessage(err.message || 'Error de conexión. Inténtalo de nuevo.', 'error')
-    } finally {
-      setLoading(false)
-    }
+  e.preventDefault();
+  if (!recaptchaToken || !recaptchaValid) {
+    showMessage('Por favor, completa la verificación de reCAPTCHA', 'error');
+    return;
   }
+
+  const { name, email, message } = form;
+  if (!name || !email || !message) {
+    showMessage('Por favor, completa todos los campos obligatorios.', 'error');
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    showMessage('Por favor, ingresa un email válido.', 'error');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const response = await fetch(`${API_URL}/api/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, 'g-recaptcha-response': recaptchaToken }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      showMessage('¡Mensaje enviado correctamente! Te contactaremos pronto.', 'success');
+
+      // ✅ Enviar correo con EmailJS aquí dentro
+      emailjs.send(
+        'service_h3q797j',
+        'template_w7ce60p',
+        {
+          user_name: form.name,
+          user_email: form.email,
+          user_message: form.message,
+        },
+        'kbFBPttnT6sPxNlk0'
+      )
+      .then((res) => {
+        console.log('📧 Correo enviado con éxito:', res.status);
+      })
+      .catch((err) => {
+        console.error('❌ Error al enviar el correo:', err);
+      });
+
+      setForm({ name: '', email: '', phone: '', message: '' });
+      resetRecaptcha();
+    } else {
+      throw new Error(result.error || 'Error al enviar el mensaje');
+    }
+  } catch (err) {
+    showMessage(err.message || 'Error de conexión. Inténtalo de nuevo.', 'error');
+  } finally {
+    setLoading(false);
+  }
+  };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -99,7 +135,27 @@ const ContactForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 p-4">
       <div className="bg-white p-8 rounded-2xl shadow-2xl border border-gray-200 max-w-xl w-full space-y-6">
-        <h1 className="text-3xl font-bold text-center text-blue-700">Contáctanos</h1>
+        <div className='flex items-center justify-between'>
+          <button 
+          onClick={handleback}
+          className=' bg-red-500 text-white font-semibold p-1 rounded-full shadow-md hover:scale-105'>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-6 h-6 text-white"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
+            </svg>
+          </button>
+          <h1 className="text-3xl font-bold text-center text-blue-700 w-full -ml-6">Contáctanos</h1>
+        </div>
   
         <form onSubmit={handleSubmit} className="space-y-5" id="contactForm">
           <div>
@@ -110,6 +166,7 @@ const ContactForm = () => {
               placeholder="Tu nombre"
               value={form.name}
               onChange={handleChange}
+              onKeyDown={blockUnsafeChars}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -123,6 +180,7 @@ const ContactForm = () => {
               placeholder="tucorreo@ejemplo.com"
               value={form.email}
               onChange={handleChange}
+              onKeyDown={blockUnsafeChars}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -136,6 +194,7 @@ const ContactForm = () => {
               placeholder="55 1234 5678"
               value={form.phone}
               onChange={handleChange}
+              onKeyDown={blockUnsafeChars}
               className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -147,6 +206,7 @@ const ContactForm = () => {
               placeholder="Escribe tu mensaje aquí..."
               value={form.message}
               onChange={handleChange}
+              onKeyDown={blockUnsafeChars}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-md h-32 resize-vertical focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

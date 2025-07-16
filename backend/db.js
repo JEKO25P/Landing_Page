@@ -23,6 +23,7 @@ db.serialize(() => {
       phone TEXT,
       message TEXT NOT NULL,
       recaptcha_score REAL,
+      status TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `, (err) => {

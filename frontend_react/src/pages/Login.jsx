@@ -6,6 +6,14 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  //para la sanitizacion de entrada
+  const blockUnsafeChars = (e) => {
+  const blockedChars = ['<', '>', '{', '}', '"', "'", "[", "]"];
+  if (blockedChars.includes(e.key)) {
+    e.preventDefault();
+  }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -19,7 +27,7 @@ export default function Login() {
 
     if (res.ok) {
       localStorage.setItem('token', data.token);
-      navigate('/contact-form');
+      navigate('/dashboard');
     } else {
       alert(data.message || 'Error al iniciar sesión');
     }
@@ -38,6 +46,7 @@ export default function Login() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={blockUnsafeChars}
               required
             />
           </div>
@@ -49,6 +58,7 @@ export default function Login() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={blockUnsafeChars}
               required
             />
           </div>

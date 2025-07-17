@@ -1,36 +1,40 @@
-require('dotenv').config();
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,         // ejemplo: containers-us-west-123.railway.app
-  user: process.env.DB_USER,         // ejemplo: root
-  password: process.env.DB_PASSWORD, // la contraseña proporcionada por Railway
-  database: process.env.DB_NAME,     // nombre de la base de datos, también en Railway
-  port: process.env.DB_PORT          // generalmente 3306 o el puerto de Railway
-}).promise();
+// Crear conexión MySQL (ajusta estos datos con los de tu servicio de Render, Railway o local)
+const db = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'contact_form',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
 
 // Crear tabla si no existe
 async function initializeDatabase() {
   try {
-    await pool.query(`
+    const createTableQuery = `
       CREATE TABLE IF NOT EXISTS contacts (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) NOT NULL,
-        phone VARCHAR(20),
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
         message TEXT NOT NULL,
         recaptcha_score FLOAT,
-        status VARCHAR(20) DEFAULT 'nuevo',
+        status VARCHAR(50) DEFAULT 'nuevo',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      );
+    `;
+
+    await db.query(createTableQuery);
     console.log('✅ Tabla "contacts" verificada o creada.');
-  } catch (error) {
-    console.error('💥 Error al inicializar la base de datos:', error);
+  } catch (err) {
+    console.error('💥 Error al inicializar la base de datos:', err);
   }
 }
 
-// Llamar a la función al cargar el módulo
+// Inicializa al cargar el módulo
 initializeDatabase();
 
-module.exports = pool;
+module.exports = db;

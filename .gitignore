@@ -1,0 +1,7 @@
+**/node_modules/
+
+.env
+
+# Ignorar solo el package.json y package-lock.json del backend
+backend/package.json
+backend/package-lock.json

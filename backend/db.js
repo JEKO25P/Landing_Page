@@ -1,45 +1,40 @@
-const sqlite3 = require("sqlite3").verbose();
-const path = require('path');
-const fs = require('fs');
+const mysql = require('mysql2/promise');
 
-// Crear la base de datos en la carpeta actual
-const dbPath = path.join(__dirname, 'contact.db');
+// Crear conexión MySQL (ajusta estos datos con los de tu servicio de Render, Railway o local)
+const db = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'contact_form',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
 
-// Eliminar la base de datos existente para empezar limpio
-if (fs.existsSync(dbPath)) {
-  fs.unlinkSync(dbPath);
-  console.log('Base de datos anterior eliminada');
+// Crear tabla si no existe
+async function initializeDatabase() {
+  try {
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS contacts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        message TEXT NOT NULL,
+        recaptcha_score FLOAT,
+        status VARCHAR(50) DEFAULT 'nuevo',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await db.query(createTableQuery);
+    console.log('✅ Tabla "contacts" verificada o creada.');
+  } catch (err) {
+    console.error('💥 Error al inicializar la base de datos:', err);
+  }
 }
 
-const db = new sqlite3.Database(dbPath);
-
-db.serialize(() => {
-  // Crear la tabla completa con todas las columnas desde el principio
-  db.run(`
-    CREATE TABLE contacts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT,
-      message TEXT NOT NULL,
-      recaptcha_score REAL,
-      status TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `, (err) => {
-    if (err) {
-      console.error('Error creando tabla:', err);
-    } else {
-      console.log('Tabla contacts creada exitosamente con todas las columnas');
-    }
-  });
-});
-
-// Manejar errores de la base de datos
-db.on('error', (err) => {
-  console.error('Error de base de datos:', err);
-});
-
-console.log('Base de datos inicializada en:', dbPath);
+// Inicializa al cargar el módulo
+initializeDatabase();
 
 module.exports = db;

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import emailjs from '@emailjs/browser';
 import { useNavigate } from 'react-router-dom';
 
-
-const API_URL = 'http://localhost:3000'
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const ContactForm = () => {
@@ -85,7 +83,7 @@ const ContactForm = () => {
 
   setLoading(true);
   try {
-    const response = await fetch(`${API_URL}/api/contact`, {
+    const response = await fetch(`https://tu-backend.onrender.com/api/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, 'g-recaptcha-response': recaptchaToken }),

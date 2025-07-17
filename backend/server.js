@@ -4,7 +4,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const axios = require("axios");
 const path = require("path");
-const db = require("./db");
+const db = require("./db"); // Ya es el mysql2.createPool
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -13,14 +13,12 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Usuario de prueba
 const User = {
   id: 1,
   email: 'admin@gmail.com',
   password: bcrypt.hashSync('123456', 8),
 };
 
-// Ruta de login
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
 
@@ -37,13 +35,9 @@ app.post('/api/login', (req, res) => {
   res.json({ token });
 });
 
-// Servir archivos estáticos del frontend (opcional)
-app.use(express.static(path.join(__dirname, '../frontend_react')));
-
-// Configuración de reCAPTCHA
+// reCAPTCHA
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
-// Función de verificación de reCAPTCHA
 async function verifyRecaptcha(token) {
   try {
     const response = await axios.post(
@@ -53,9 +47,7 @@ async function verifyRecaptcha(token) {
         response: token
       }),
       {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       }
     );
     console.log('🔍 Respuesta de reCAPTCHA:', JSON.stringify(response.data, null, 2));
@@ -66,11 +58,11 @@ async function verifyRecaptcha(token) {
   }
 }
 
-// Ruta para recibir contacto con reCAPTCHA
+// POST /api/contact
 app.post("/api/contact", async (req, res) => {
   try {
     const { name, email, phone, message, 'g-recaptcha-response': recaptchaToken } = req.body;
-    const status = 'nuevo'; // Definimos status por defecto
+    const status = 'nuevo';
 
     console.log('📥 Contacto recibido:', { name, email, phone, status });
 
@@ -89,41 +81,50 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ error: "Verificación de reCAPTCHA falló" });
     }
 
-    const stmt = db.prepare(`
+    const [result] = await db.query(`
       INSERT INTO contacts (name, email, phone, message, recaptcha_score, status)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, email, phone || null, message, null, status]
+    );
 
-    stmt.run(name, email, phone || null, message, null, status, function (err) {
-      if (err) {
-        console.error('💥 Error al guardar en DB:', err);
-        return res.status(500).json({ error: "Error al guardar en la base de datos" });
-      }
+    console.log('✅ Contacto guardado con ID:', result.insertId);
+    res.status(200).json({ success: true, id: result.insertId, message: "Contacto guardado exitosamente" });
 
-      console.log('✅ Contacto guardado con ID:', this.lastID);
-      res.status(200).json({ success: true, id: this.lastID, message: "Contacto guardado exitosamente" });
-    });
-
-    stmt.finalize();
   } catch (error) {
     console.error('💥 Error en /api/contact:', error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
-
-// Obtener todos los contactos (opcional)
-app.get("/api/contacts", (req, res) => {
-  db.all("SELECT * FROM contacts ORDER BY created_at DESC", [], (err, rows) => {
-    if (err) {
-      console.error("Error al leer los contactos:", err);
-      return res.status(500).json({ error: "Error al leer los contactos" });
-    }
+// GET /api/contacts
+app.get("/api/contacts", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM contacts ORDER BY created_at DESC");
     res.json(rows);
-  });
+  } catch (err) {
+    console.error("Error al leer los contactos:", err);
+    res.status(500).json({ error: "Error al leer los contactos" });
+  }
 });
 
-// Middleware de error global
+// PUT /api/contacts/:id/status
+app.put("/api/contacts/:id/status", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const [result] = await db.query(
+      `UPDATE contacts SET status = ? WHERE id = ?`,
+      [status, id]
+    );
+    res.json({ success: true, updated: result.affectedRows });
+  } catch (err) {
+    console.error("❌ Error al actualizar estado:", err);
+    res.status(500).json({ error: "Error al actualizar estado" });
+  }
+});
+
+// Error handler
 app.use((err, req, res, next) => {
   console.error('Error no manejado:', err);
   res.status(500).json({ error: 'Error interno del servidor' });
@@ -131,31 +132,4 @@ app.use((err, req, res, next) => {
 
 app.listen(3000, () => {
   console.log("🚀 Servidor escuchando en http://localhost:3000");
-
-  // Mostrar contactos existentes al iniciar
-  db.all("SELECT * FROM contacts ORDER BY created_at DESC", [], (err, rows) => {
-    if (err) {
-      console.error("Error al leer los contactos:", err);
-    } else if (rows.length > 0) {
-      console.log("Contactos guardados:");
-      console.table(rows);
-    } else {
-      console.log("📝 No hay contactos guardados aún.");
-    }
-  });
 });
-
-// Actualizar estado de un contacto
-app.put("/api/contacts/:id/status", (req, res) => {
-  const { id } = req.params
-  const { status } = req.body
-
-  const stmt = db.prepare(`UPDATE contacts SET status = ? WHERE id = ?`)
-  stmt.run(status, id, function (err) {
-    if (err) {
-      console.error("❌ Error al actualizar estado:", err)
-      return res.status(500).json({ error: "Error al actualizar estado" })
-    }
-    res.json({ success: true, updated: this.changes })
-  })
-})

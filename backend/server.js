@@ -9,9 +9,8 @@ const db = require("./db"); // mysql2.createPool ya configurado
 
 const app = express();
 
-// ✅ Configurar CORS para permitir localhost y frontend en producción
 app.use(cors({
-  origin: ["http://localhost:5173", "https://tu-frontend.vercel.app"], // reemplaza con tu dominio real
+  origin: ["http://localhost:5173"], // reemplaza con tu dominio real
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));

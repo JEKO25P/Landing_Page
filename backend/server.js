@@ -11,24 +11,31 @@ const app = express();
 
 // ✅ Configurar CORS correctamente
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://landing-page-syw1.vercel.app"
+  "http://localhost:5173",  // desarrollo
+  "https://landing-page-syw1.vercel.app", // tu frontend en producción
 ];
 
 app.use(cors({
-  origin: "*",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS no permitido por el servidor"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
-app.options('*', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+// Manejo de preflight OPTIONS
+app.options("*", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.sendStatus(200);
 });
- // ✅ Responde a preflight OPTIONS
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 

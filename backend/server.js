@@ -9,14 +9,26 @@ const db = require("./db"); // mysql2.createPool ya configurado
 
 const app = express();
 
+// ✅ Configurar CORS correctamente
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://landing-page-syw1.vercel.app"
+];
+
 app.use(cors({
-  origin: ["http://localhost:5173", "https://landing-page-syw1.vercel.app/"], // reemplaza con tu dominio real
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
-app.options("*", cors());
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(200);
+});
+ // ✅ Responde a preflight OPTIONS
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 

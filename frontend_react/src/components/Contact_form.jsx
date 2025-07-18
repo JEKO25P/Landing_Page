@@ -3,7 +3,7 @@ import emailjs from '@emailjs/browser';
 import { useNavigate } from 'react-router-dom';
 
 
-const API_URL = 'landingpage-production-c009.up.railway.app'
+const API_URL = 'https://landingpage-production-c009.up.railway.app'
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const ContactForm = () => {

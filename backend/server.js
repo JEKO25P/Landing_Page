@@ -9,32 +9,12 @@ const db = require("./db"); // mysql2.createPool ya configurado
 
 const app = express();
 
-// ✅ Configurar CORS correctamente
-const allowedOrigins = [
-  "http://localhost:5173",  // desarrollo
-  "https://landing-page-syw1.vercel.app", // tu frontend en producción
-];
-
+// ✅ Configurar CORS para permitir localhost y frontend en producción
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS no permitido por el servidor"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: ["http://localhost:5173"], // reemplaza con tu dominio real
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
-
-// Manejo de preflight OPTIONS
-app.options("*", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", req.headers.origin);
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.sendStatus(200);
-});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_URL = 'http://localhost:3000'
+const API_URL = 'landingpage-production-c009.up.railway.app'
 
 const estados = ['nuevo', 'contactado', 'descartado']
 

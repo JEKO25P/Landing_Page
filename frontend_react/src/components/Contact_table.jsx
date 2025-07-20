@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_URL = 'https://landingbackend.vercel.app/'
+const API_URL = 'https://landingback.up.railway.app'
 
 const estados = ['nuevo', 'contactado', 'descartado']
 

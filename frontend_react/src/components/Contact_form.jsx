@@ -3,7 +3,7 @@ import emailjs from '@emailjs/browser';
 import { useNavigate } from 'react-router-dom';
 
 
-const API_URL = 'http://localhost:3000'
+const API_URL = 'https://landingbackend.vercel.app/'
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const ContactForm = () => {

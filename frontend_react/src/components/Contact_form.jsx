@@ -88,7 +88,7 @@ const ContactForm = () => {
     const response = await fetch(`${API_URL}/api/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, 'g-recaptcha-response': recaptchaToken }),
+      body: JSON.stringify({ ...form, token: recaptchaToken }),
     });
 
     const result = await response.json();

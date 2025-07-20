@@ -12,6 +12,7 @@ const app = express();
 app.use(cors({
   origin: ["http://localhost:5173", "https://landingfront.vercel.app"], // reemplaza con tu dominio real
   methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
@@ -71,18 +72,18 @@ async function verifyRecaptcha(token) {
 // POST /api/contact
 app.post("/api/contact", async (req, res) => {
   try {
-    const { name, email, phone, message, 'g-recaptcha-response': recaptchaToken } = req.body;
+    const { name, email, phone, message, token } = req.body; // token será el recaptchaToken
     const status = 'nuevo';
 
     if (!name || !email || !message) {
       return res.status(400).json({ error: "Nombre, email y mensaje son obligatorios" });
     }
 
-    if (!recaptchaToken) {
+    if (!token) {
       return res.status(400).json({ error: "Falta verificación de reCAPTCHA" });
     }
 
-    const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+    const recaptchaResult = await verifyRecaptcha(token);
     if (!recaptchaResult.success) {
       return res.status(400).json({ error: "Verificación de reCAPTCHA falló" });
     }

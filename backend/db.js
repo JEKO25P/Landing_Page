@@ -2,11 +2,11 @@ const mysql = require('mysql2/promise');
 
 // Crear conexión MySQL (usa el puerto 300 si es necesario)
 const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'contact_form',
-  port: process.env.DB_PORT || '3036',
+  port: process.env.DB_PORT,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

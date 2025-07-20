@@ -25,6 +25,10 @@ const User = {
   password: bcrypt.hashSync('123456', 8),
 };
 
+app.get("/", (req, res) => {
+  res.send(" Backend funcionando correctamente en Railway.");
+});
+
 // Ruta de login
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;

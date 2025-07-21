@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import emailjs from '@emailjs/browser';
 import { useNavigate } from 'react-router-dom';
+import ReCAPTCHA from "react-google-recaptcha";
 
 
 const API_URL = 'https://landingback.up.railway.app'
@@ -213,13 +214,15 @@ const ContactForm = () => {
           </div>
   
           <div className="flex justify-center py-2 g-recaptcha-container">
-            <div
-              className="g-recaptcha"
-              data-sitekey={SITE_KEY}
-              data-callback="onRecaptchaSuccess"
-              data-expired-callback="onRecaptchaExpired"
-              data-error-callback="onRecaptchaError"
-            ></div>
+          <ReCAPTCHA
+              sitekey={SITE_KEY}
+              onChange={(token) => {
+                setRecaptchaToken(token);
+                setRecaptchaValid(!!token);
+              }}
+              onExpired={() => setRecaptchaValid(false)}
+              onErrored={() => setRecaptchaValid(false)}
+            />
           </div>
   
           <button

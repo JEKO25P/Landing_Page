@@ -10,7 +10,7 @@ const db = require("./db"); // mysql2.createPool ya configurado
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:5173", "https://landingfront.vercel.app"], // reemplaza con tu dominio real
+  origin: ["http://localhost:5173", "https://projectlanding.vercel.app"], // reemplaza con tu dominio real
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true

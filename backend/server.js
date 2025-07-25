@@ -6,6 +6,7 @@ const axios = require("axios");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require("./db"); // mysql2.createPool ya configurado
+const verifyToken = require('./authMiddleware');
 
 const app = express();
 
@@ -40,7 +41,7 @@ app.post('/api/login', (req, res) => {
 
   const token = jwt.sign(
     { id: User.id, email: User.email },
-    process.env.JWT_SECRET || 'clave-super-secreta',
+    process.env.JWT_SECRET,
     { expiresIn: '2h' }
   );
 
@@ -102,8 +103,8 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
-// GET /api/contacts
-app.get("/api/contacts", async (req, res) => {
+// GET /api/contacts (con token verificado)
+app.get("/api/contacts", verifyToken, async (req, res) => {
   try {
     const [rows] = await db.query("SELECT * FROM contacts ORDER BY created_at DESC");
     res.json(rows);

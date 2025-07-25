@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const API_URL = 'https://landingback.up.railway.app'
 
@@ -8,19 +9,49 @@ export default function ContactTable() {
   const [contacts, setContacts] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(5)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    fetch(`${API_URL}/api/contacts`)
-      .then(res => res.json())
-      .then(data => setContacts(data))
-      .catch(err => console.error('❌ Error al cargar contactos:', err))
-  }, [])
+    const fetchContacts = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          console.warn('No hay token, redirigiendo al login...')
+          navigate('/login') // Redirige si no hay token
+          return
+        }
+
+        const res = await fetch(`${API_URL}/api/contacts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert('Sesión expirada. Inicia sesión nuevamente.')
+            navigate('/login')
+          }
+          throw new Error('Error al obtener contactos')
+        }
+
+        const data = await res.json()
+        setContacts(data)
+      } catch (err) {
+        console.error('Error al cargar contactos:', err)
+      }
+    }
+
+    fetchContacts()
+  }, [navigate])
 
   const handleStatusChange = async (id, newStatus) => {
     try {
+      const token = localStorage.getItem('token')
       const res = await fetch(`${API_URL}/api/contacts/${id}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({ status: newStatus })
       })
       if (res.ok) {

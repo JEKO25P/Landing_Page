@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 
 
-const API_URL = 'http://localhost:3227'
+const API_URL = 'http://167.172.150.250:3240'
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const ContactForm = () => {

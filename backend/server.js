@@ -12,7 +12,7 @@ const app = express();
 
 // Configurar CORS
 app.use(cors({
-  origin: ["http://localhost:3240", "https://projectlanding.vercel.app"], // reemplaza con tu dominio real
+  origin: ["http://localhost:3240", "http://167.172.150.250:3240","https://projectlanding.vercel.app"], // reemplaza con tu dominio real
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true

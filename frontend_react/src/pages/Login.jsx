@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'http://167.172.150.250:3240';
+const API_URL = 'http://167.172.150.250:3227';
 
 export default function Login() {
   const [email, setEmail] = useState('');

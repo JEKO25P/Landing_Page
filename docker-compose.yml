@@ -1,9 +1,24 @@
+name: danielsanchez04
 services:
+  db: 
+    image: mysql:8
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_HOST: localhost
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: contact_form
+    ports:
+      - "3307:3306" 
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - my_network
   api:
     build: ./backend
     container_name: api_container
     ports:
-      - "4000:4000"
+      - "3227:3227"
     env_file:
       - ./backend/.env
     depends_on:
@@ -15,21 +30,7 @@ services:
     build: ./frontend_react
     container_name: landing_container
     ports:
-      - "3000:3000"
-    networks:
-      - my_network
-
-  db:
-    image: mysql:8
-    container_name: mysql_container
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ""
-      MYSQL_DATABASE: ${DB_NAME}
-    ports:
-      - "3307:3306" 
-    volumes:
-      - db_data:/var/lib/mysql
+      - "3240:3000"
     networks:
       - my_network
 
@@ -38,4 +39,4 @@ networks:
     driver: bridge
 
 volumes:
-  db_data:
+  mysql_data:

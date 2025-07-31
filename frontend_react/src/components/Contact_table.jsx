@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const API_URL = 'http://localhost:4000'
+const API_URL = 'http://localhost:3227'
 
 const estados = ['nuevo', 'contactado', 'descartado']
 

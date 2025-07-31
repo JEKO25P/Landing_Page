@@ -12,7 +12,7 @@ const app = express();
 
 // Configurar CORS
 app.use(cors({
-  origin: ["http://localhost:3000", "https://projectlanding.vercel.app"], // reemplaza con tu dominio real
+  origin: ["http://localhost:3240", "https://projectlanding.vercel.app"], // reemplaza con tu dominio real
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -30,7 +30,7 @@ const User = {
 
 // Ruta principal
 app.get("/", (req, res) => {
-  res.send(" Backend funcionando correctamente en Railway.");
+  res.send(" Backend funcionando correctamente");
 });
 
 // Ruta de login
@@ -141,7 +141,7 @@ app.use((err, req, res, next) => {
 
 // Iniciar servidor solo cuando la base de datos esté lista
 initializeDatabase().then(() => {
-  const PORT = process.env.PORT || 4000;
+  const PORT = process.env.PORT || 3227;
   app.listen(PORT, () => {
     console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
   });

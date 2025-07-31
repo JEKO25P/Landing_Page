@@ -5,11 +5,11 @@ let db;
 // Función para crear el pool de conexión
 async function createPool() {
   return mysql.createPool({
-    host: process.env.DB_HOST,
+    host: process.env.DB_HOST || 'mysql_container',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
+    password: process.env.DB_PASSWORD || 'rootpass',
     database: process.env.DB_NAME || 'contact_form',
-    port: process.env.DB_PORT || 3306,
+    port: parseInt(process.env.DB_PORT, 10) || 3306,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0

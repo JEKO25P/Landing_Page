@@ -12,3 +12,4 @@ node server.js
 al momento de mandar un contacto, en la consola te mandará una tabla de los datos insertados.
 # Landing_Page
 Creacion de una Landing Page sencilla con fines academicos 
+

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 
 
-const API_URL = 'https://landingback.up.railway.app'
+const API_URL = 'http://localhost:4000'
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const ContactForm = () => {

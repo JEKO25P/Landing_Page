@@ -1,17 +1,18 @@
-require('dotenv').config({ path: './backend/.env' });
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const axios = require("axios");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require("./db"); // mysql2.createPool ya configurado
+const { initializeDatabase, getPool } = require("./db"); // db.js actualizado con reintentos
 const verifyToken = require('./authMiddleware');
 
 const app = express();
 
+// Configurar CORS
 app.use(cors({
-  origin: ["http://localhost:5173", "https://projectlanding.vercel.app"], // reemplaza con tu dominio real
+  origin: ["http://localhost:3000", "https://projectlanding.vercel.app"], // reemplaza con tu dominio real
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -27,6 +28,7 @@ const User = {
   password: bcrypt.hashSync('123456', 8),
 };
 
+// Ruta principal
 app.get("/", (req, res) => {
   res.send(" Backend funcionando correctamente en Railway.");
 });
@@ -89,7 +91,7 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ error: "Verificación de reCAPTCHA falló" });
     }
 
-    const [result] = await db.query(`
+    const [result] = await getPool().query(`
       INSERT INTO contacts (name, email, phone, message, recaptcha_score, status)
       VALUES (?, ?, ?, ?, ?, ?)`,
       [name, email, phone || null, message, recaptchaResult.score || null, status]
@@ -106,7 +108,7 @@ app.post("/api/contact", async (req, res) => {
 // GET /api/contacts (con token verificado)
 app.get("/api/contacts", verifyToken, async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM contacts ORDER BY created_at DESC");
+    const [rows] = await getPool().query("SELECT * FROM contacts ORDER BY created_at DESC");
     res.json(rows);
   } catch (err) {
     console.error("Error al leer los contactos:", err);
@@ -120,7 +122,7 @@ app.put("/api/contacts/:id/status", async (req, res) => {
   const { status } = req.body;
 
   try {
-    const [result] = await db.query(
+    const [result] = await getPool().query(
       `UPDATE contacts SET status = ? WHERE id = ?`,
       [status, id]
     );
@@ -137,8 +139,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
-// Iniciar servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
+// Iniciar servidor solo cuando la base de datos esté lista
+initializeDatabase().then(() => {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error("No se pudo inicializar la base de datos:", err);
+  process.exit(1); // Cierra el servidor si la BD no está disponible
 });

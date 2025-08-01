@@ -12,7 +12,7 @@ const app = express();
 
 // Configurar CORS 
 app.use(cors({
-  origin: ["http://localhost:3240", "http://167.172.150.250:3240", "https://projectlanding.vercel.app"], // reemplaza con tu dominio real
+  origin: ["http://localhost:3240", "http://167.172.150.250:3240", "http://3240.efdiaz.xyz" , 'http://www.3240.efdiaz.xyz' ,"https://projectlanding.vercel.app"], // reemplaza con tu dominio real
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -143,7 +143,7 @@ app.use((err, req, res, next) => {
 initializeDatabase().then(() => {
   const PORT = process.env.PORT || 3227;
   app.listen(PORT, () => {
-    console.log(`🚀 Servidor escuchando en http://167.172.150.250:${PORT}`);
+    console.log(`🚀 Servidor escuchando en ${PORT}`);
   });
 }).catch(err => {
   console.error("No se pudo inicializar la base de datos:", err);
